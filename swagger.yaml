@@ -1,0 +1,120 @@
+---
+swagger: "2.0"
+info:
+  description: "tabletennis365.com fixtures"
+  version: "0.0.1"
+  title: "tabletennis365.com fixtures"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "virtserver.swaggerhub.com"
+basePath: "/sd2/tt-fixtures/1.0.0"
+schemes:
+- "https"
+paths:
+  /:
+    get:
+      summary: "lists fixtures"
+      tags: 
+        - fixtures
+      description: "List fixtures for the provided parameters.\nIf no parameters are\
+        \ provided, all fixtures are shown.\n"
+      operationId: "listFixtures"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cl_division"
+        in: "query"
+        description: "Central London league division to show (1-6)"
+        required: false
+        type: "integer"
+        minimum: 1
+        maximum: 6
+      - name: "division_id"
+        in: "query"
+        description: "division ID to show"
+        required: false
+        type: "integer"
+      - name: "club_id"
+        in: "query"
+        description: "club ID to show"
+        required: false
+        type: "integer"
+      - name: "show_completed"
+        in: "query"
+        description: "whether to include completed matches in the response"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "search results matching criteria"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Fixture"
+definitions:
+  Fixture:
+    type: "object"
+    properties:
+      time:
+        type: "string"
+        format: "date-time"
+        example: "2017-07-21T17:32:28Z"
+      venue:
+        type: "string"
+        example: "Brunswick"
+      home:
+        $ref: "#/definitions/Team"
+      away:
+        $ref: "#/definitions/Team"
+    example:
+      venue: "Brunswick"
+      away:
+        score: 0
+        players:
+        - score: 4
+          name: "Timo Boll"
+        - score: 4
+          name: "Timo Boll"
+        name: "Joola Morpeth 1"
+      time: "2017-07-21T17:32:28Z"
+      home:
+        score: 0
+        players:
+        - score: 4
+          name: "Timo Boll"
+        - score: 4
+          name: "Timo Boll"
+        name: "Joola Morpeth 1"
+  Team:
+    properties:
+      name:
+        type: "string"
+        example: "Joola Morpeth 1"
+      score:
+        type: "integer"
+        minimum: 0
+        maximum: 10
+      players:
+        type: "array"
+        items:
+          $ref: "#/definitions/Player"
+    example:
+      score: 8
+      players:
+      - score: 4
+        name: "Timo Boll"
+      - score: 4
+        name: "Timo Boll"
+      name: "Joola Morpeth 1"
+  Player:
+    properties:
+      name:
+        type: "string"
+        example: "Timo Boll"
+      score:
+        type: "integer"
+        example: 4
+    example:
+      score: 4
+      name: "Timo Boll"
