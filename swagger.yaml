@@ -56,6 +56,10 @@ definitions:
   Fixture:
     type: "object"
     properties:
+      name:
+        type: "string"
+      status:
+        type: "string"
       time:
         type: "string"
         format: "date-time"
