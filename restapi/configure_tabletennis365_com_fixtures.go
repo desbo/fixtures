@@ -6,6 +6,12 @@ import (
 	"crypto/tls"
 	"net/http"
 
+	"github.com/go-openapi/swag"
+
+	"github.com/desbo/fixtures/models"
+
+	"github.com/desbo/fixtures/scraper"
+
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -38,7 +44,14 @@ func configureAPI(api *operations.Tabletennis365ComFixturesAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.FixturesListFixturesHandler = fixtures.ListFixturesHandlerFunc(func(params fixtures.ListFixturesParams) middleware.Responder {
-		return middleware.NotImplemented("operation fixtures.ListFixtures has not yet been implemented")
+		fs, err := scraper.Scrape(params)
+
+		if err != nil {
+			e := &models.Error{Message: swag.String(err.Error())}
+			return fixtures.NewListFixturesDefault(500).WithPayload(e)
+		}
+
+		return fixtures.NewListFixturesOK().WithPayload(models.ListFixturesOKBody(fs))
 	})
 
 	api.ServerShutdown = func() {}

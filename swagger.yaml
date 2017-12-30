@@ -7,10 +7,8 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "virtserver.swaggerhub.com"
-basePath: "/sd2/tt-fixtures/1.0.0"
 schemes:
-- "https"
+- "http"
 paths:
   /:
     get:
@@ -52,6 +50,10 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Fixture"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   Fixture:
     type: "object"
@@ -122,3 +124,10 @@ definitions:
     example:
       score: 4
       name: "Timo Boll"
+  Error:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string

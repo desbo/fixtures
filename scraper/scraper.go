@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -12,6 +13,9 @@ import (
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
 	"github.com/go-openapi/strfmt"
 	"github.com/namsral/microdata"
+
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/urlfetch"
 )
 
 const BaseURL = "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?vm=1"
@@ -33,7 +37,7 @@ func boolToParam(b bool) string {
 	return "False"
 }
 
-func createURL(params *fixtures.ListFixturesParams) (*url.URL, error) {
+func createURL(params fixtures.ListFixturesParams) (*url.URL, error) {
 	u, err := url.Parse(BaseURL)
 
 	if err != nil {
@@ -75,22 +79,55 @@ func isSportsEvent(item *microdata.Item) bool {
 	return false
 }
 
-func parseStatus(item *microdata.Item) string {
-	s, ok := item.Properties["eventStatus"]
+func safeGet(item *microdata.Item, key string) (interface{}, error) {
+	values, ok := item.Properties[key]
 
-	if !ok || len(s) == 0 {
+	if !ok || len(values) == 0 {
+		return nil, fmt.Errorf("property %v not found (%v)", key, item.Properties)
+	}
+
+	return values[0], nil
+}
+
+func getOrElse(item *microdata.Item, key string, orElse interface{}) interface{} {
+	v, err := safeGet(item, key)
+
+	if err != nil {
+		return orElse
+	}
+
+	return v
+}
+
+func parseStatus(item *microdata.Item) string {
+	s, err := safeGet(item, "eventStatus")
+
+	if err != nil {
 		// default status for events missing a status
 		return "scheduled"
 	}
 
-	return strings.ToLower(strings.Replace(s[0].(string), "http://schema.org/Event", "", 1))
+	return strings.ToLower(strings.Replace(s.(string), "http://schema.org/Event", "", 1))
 }
 
-func parseTime(item *microdata.Item) (time.Time, error) {
+func parseTime(item *microdata.Item) (*time.Time, error) {
+	t, err := safeGet(item, "startDate")
+
+	if err != nil {
+		return nil, err
+	}
+
 	layout := "Monday 2 January 2006 @ 15:04"
-	fixed := strings.Replace(item.Properties["startDate"][0].(string), "\u00a0", " ", -1)
+	fixed := strings.Replace(t.(string), "\u00a0", " ", -1)
 	cleaned := regexp.MustCompile(`(\d{1,2})(st|nd|rd|th)`).ReplaceAllString(fixed, "$1")
-	return time.Parse(layout, cleaned)
+
+	tp, err := time.Parse(layout, cleaned)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &tp, nil
 }
 
 // returns home, away, error
@@ -138,15 +175,11 @@ func parseTeams(item *microdata.Item, eventName string) (*models.Team, *models.T
 	return home, away, nil
 }
 
-func parseVenue(item *microdata.Item) string {
-	return item.Properties["location"][0].(string)
-}
-
 func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 	fixture := &models.Fixture{
-		Name:   item.Properties["description"][0].(string),
+		Name:   getOrElse(item, "description", "unknown").(string),
 		Status: parseStatus(item),
-		Venue:  item.Properties["location"][0].(string),
+		Venue:  getOrElse(item, "location", "unknown").(string),
 	}
 
 	time, err := parseTime(item)
@@ -155,8 +188,7 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 		return nil, err
 	}
 
-	fixture.Time = strfmt.DateTime(time)
-
+	fixture.Time = strfmt.DateTime(*time)
 	home, away, err := parseTeams(item, fixture.Name)
 
 	if err != nil {
@@ -169,18 +201,38 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 	return fixture, nil
 }
 
-func Scrape(params *fixtures.ListFixturesParams) error {
+func Scrape(params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
 	u, err := createURL(params)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = microdata.ParseURL(u.String())
+	ctx := appengine.NewContext(params.HTTPRequest)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
+	client := urlfetch.Client(ctx)
+	resp, err := client.Get(u.String())
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	data, err := microdata.ParseHTML(resp.Body, "text/hmtl", u)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var fixtures []*models.Fixture
+
+	for _, item := range data.Items {
+		fixture, err := NewFixture(item)
+
+		if err == nil {
+			fixtures = append(fixtures, fixture)
+		}
+	}
+
+	return fixtures, nil
 }
