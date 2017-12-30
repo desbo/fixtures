@@ -6,9 +6,6 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/go-openapi/strfmt"
-
-	"github.com/desbo/fixtures/models"
 	"github.com/desbo/fixtures/scraper"
 
 	"github.com/namsral/microdata"
@@ -39,23 +36,11 @@ func main() {
 
 	data, err := microdata.ParseHTML(file, "text/html", u)
 
-	for _, item := range data.Items {
+	for _, item := range data.Items[:2] {
 		if isSportsEvent(item) {
-			fixture := &models.Fixture{
-				Name:   item.Properties["description"][0].(string),
-				Status: scraper.ParseStatus(item),
-			}
-
-			time, err := scraper.ParseTime(item)
-
-			fmt.Println(time, err)
-
-			if err != nil {
-				fixture.Time = strfmt.DateTime(time)
-			}
-
-			// fmt.Println(fixture)
-			// fmt.Println(item.Properties)
+			fixture, _ := scraper.NewFixture(item)
+			fmt.Println(fixture)
+			fmt.Println("!!!")
 		}
 	}
 
