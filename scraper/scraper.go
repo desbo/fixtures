@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/namsral/microdata"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
 )
 
@@ -201,14 +200,17 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 	return fixture, nil
 }
 
-func Scrape(params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
+func CacheKey(params fixtures.ListFixturesParams) string {
+	return fmt.Sprintf("%d:%d:%d:%b", params.ClDivision, params.ClubID, params.DivisionID, params.ShowCompleted)
+}
+
+func Scrape(ctx context.Context, params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
 	u, err := createURL(params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	ctx := appengine.NewContext(params.HTTPRequest)
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 	client := urlfetch.Client(ctx)
@@ -218,7 +220,7 @@ func Scrape(params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
 		return nil, err
 	}
 
-	data, err := microdata.ParseHTML(resp.Body, "text/hmtl", u)
+	data, err := microdata.ParseHTML(resp.Body, "text/html", u)
 
 	if err != nil {
 		return nil, err
@@ -228,7 +230,6 @@ func Scrape(params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
 
 	for _, item := range data.Items {
 		fixture, err := NewFixture(item)
-
 		if err == nil {
 			fixtures = append(fixtures, fixture)
 		}

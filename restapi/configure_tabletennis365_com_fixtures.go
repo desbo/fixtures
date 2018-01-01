@@ -19,6 +19,8 @@ import (
 
 	"github.com/desbo/fixtures/restapi/operations"
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
+
+	"google.golang.org/appengine"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -44,7 +46,10 @@ func configureAPI(api *operations.Tabletennis365ComFixturesAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.FixturesListFixturesHandler = fixtures.ListFixturesHandlerFunc(func(params fixtures.ListFixturesParams) middleware.Responder {
-		fs, err := scraper.Scrape(params)
+		var fs []*models.Fixture
+
+		ctx := appengine.NewContext(params.HTTPRequest)
+		err := scraper.GetOrUpdateCachedFixtures(ctx, params, &fs)
 
 		if err != nil {
 			e := &models.Error{Message: swag.String(err.Error())}
