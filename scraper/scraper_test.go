@@ -10,16 +10,21 @@ func TestCreateURL(t *testing.T) {
 	tru := bool(true)
 	fals := bool(false)
 
-	params1 := &fixtures.ListFixturesParams{
+	params1 := fixtures.ListFixturesParams{
+		League:        "CentralLondon",
+		Season:        "Winter_2017-18",
 		ClDivision:    &londonDivision,
 		ClubID:        &club,
 		ShowCompleted: &tru,
 	}
 
-	params2 := &fixtures.ListFixturesParams{
-		DivisionID:    &d,
-		ShowCompleted: &fals,
-	}
+	params2 :=
+		fixtures.ListFixturesParams{
+			League:        "CentralLondon",
+			Season:        "Winter_2017-18",
+			DivisionID:    &d,
+			ShowCompleted: &fals,
+		}
 
 	url1, err := createURL(params1)
 

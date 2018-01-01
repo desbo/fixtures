@@ -10,7 +10,7 @@ info:
 schemes:
 - "http"
 paths:
-  /:
+  /{league}/{season}:
     get:
       summary: "lists fixtures"
       tags: 
@@ -21,6 +21,18 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - in: path
+        name: league
+        type: string
+        required: true
+        description: Name of the tabletennis365.com league to query
+      
+      - in: path
+        name: season
+        type: string
+        required: true
+        description: Name of the tabletennis365.com season to query
+
       - name: "cl_division"
         in: "query"
         description: "Central London league division to show (1-6)"
@@ -28,16 +40,19 @@ paths:
         type: "integer"
         minimum: 1
         maximum: 6
+
       - name: "division_id"
         in: "query"
         description: "division ID to show"
         required: false
         type: "integer"
+
       - name: "club_id"
         in: "query"
         description: "club ID to show"
         required: false
         type: "integer"
+        
       - name: "show_completed"
         in: "query"
         description: "whether to include completed matches in the response"

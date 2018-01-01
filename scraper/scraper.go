@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -17,7 +18,8 @@ import (
 	"google.golang.org/appengine/urlfetch"
 )
 
-const BaseURL = "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?vm=1"
+//const BaseURL = "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?vm=1"
+const BaseURL = "https://www.tabletennis365.com"
 
 var centralLondonDivisionIDs = map[int64]int{
 	1: 5596,
@@ -37,7 +39,11 @@ func boolToParam(b bool) string {
 }
 
 func createURL(params fixtures.ListFixturesParams) (*url.URL, error) {
-	u, err := url.Parse(BaseURL)
+	if params.League == "" || params.Season == "" {
+		return nil, errors.New("please provide both a League and Season")
+	}
+
+	u, err := url.Parse(fmt.Sprintf("%s/%s/Fixtures/%s/All_Divisions", BaseURL, params.League, params.Season))
 
 	if err != nil {
 		return nil, err
@@ -48,6 +54,8 @@ func createURL(params fixtures.ListFixturesParams) (*url.URL, error) {
 		q.Set(key, fmt.Sprintf("%v", value))
 		u.RawQuery = q.Encode()
 	}
+
+	setQuery("vm", 1)
 
 	if params.ClDivision != nil {
 		if d, ok := centralLondonDivisionIDs[*params.ClDivision]; ok {
@@ -201,7 +209,15 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 }
 
 func CacheKey(params fixtures.ListFixturesParams) string {
-	return fmt.Sprintf("%d:%d:%d:%b", params.ClDivision, params.ClubID, params.DivisionID, params.ShowCompleted)
+	return fmt.Sprintf(
+		"%s/%s:%d:%d:%d:%b",
+		params.League,
+		params.Season,
+		params.ClDivision,
+		params.ClubID,
+		params.DivisionID,
+		params.ShowCompleted,
+	)
 }
 
 func Scrape(ctx context.Context, params fixtures.ListFixturesParams) ([]*models.Fixture, error) {
