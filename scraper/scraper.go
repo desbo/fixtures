@@ -18,17 +18,7 @@ import (
 	"google.golang.org/appengine/urlfetch"
 )
 
-//const BaseURL = "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?vm=1"
 const BaseURL = "https://www.tabletennis365.com"
-
-var centralLondonDivisionIDs = map[int64]int{
-	1: 5596,
-	2: 5597,
-	3: 5598,
-	4: 5599,
-	5: 5600,
-	6: 5601,
-}
 
 func boolToParam(b bool) string {
 	if b {
@@ -57,11 +47,7 @@ func createURL(params fixtures.ListFixturesParams) (*url.URL, error) {
 
 	setQuery("vm", 1)
 
-	if params.ClDivision != nil {
-		if d, ok := centralLondonDivisionIDs[*params.ClDivision]; ok {
-			setQuery("d", d)
-		}
-	} else if params.DivisionID != nil {
+	if params.DivisionID != nil {
 		setQuery("d", *params.DivisionID)
 	}
 
@@ -210,10 +196,9 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 
 func CacheKey(params fixtures.ListFixturesParams) string {
 	return fmt.Sprintf(
-		"%s/%s:%d:%d:%d:%b",
+		"%s/%s:%d:%d:%b",
 		params.League,
 		params.Season,
-		params.ClDivision,
 		params.ClubID,
 		params.DivisionID,
 		params.ShowCompleted,

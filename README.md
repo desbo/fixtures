@@ -17,3 +17,17 @@ https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisio
 &t= // ???
 &swn=True // show week numbers
 &hc=False // hide completed
+
+
+## notes
+clissold club ID: 5123
+
+central london division IDs:
+	1: 5596,
+	2: 5597,
+	3: 5598,
+	4: 5599,
+	5: 5600,
+	6: 5601
+
+url for division 6: 

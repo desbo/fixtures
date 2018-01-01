@@ -33,14 +33,6 @@ paths:
         required: true
         description: Name of the tabletennis365.com season to query
 
-      - name: "cl_division"
-        in: "query"
-        description: "Central London league division to show (1-6)"
-        required: false
-        type: "integer"
-        minimum: 1
-        maximum: 6
-
       - name: "division_id"
         in: "query"
         description: "division ID to show"
