@@ -30,4 +30,6 @@ central london division IDs:
 	5: 5600,
 	6: 5601
 
-url for division 6: 
+## example URLs:
+all clissold TTC games: http://localhost:8080/CentralLondon/Winter_2017-18?club_id=5123
+clissold TTC division 6: http://localhost:8080/CentralLondon/Winter_2017-18?club_id=5123&division_id=5601
