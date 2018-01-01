@@ -196,13 +196,29 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 }
 
 func CacheKey(params fixtures.ListFixturesParams) string {
+	var clubID, divisionID, showCompleted int64 = 0, 0, 0
+
+	fmt.Println(params)
+
+	if params.ClubID != nil {
+		clubID = *params.ClubID
+	}
+
+	if params.DivisionID != nil {
+		divisionID = *params.DivisionID
+	}
+
+	if params.ShowCompleted != nil && *params.ShowCompleted {
+		showCompleted = 1
+	}
+
 	return fmt.Sprintf(
-		"%s/%s:%d:%d:%b",
+		"%s/%s:%d:%d:%d",
 		params.League,
 		params.Season,
-		params.ClubID,
-		params.DivisionID,
-		params.ShowCompleted,
+		clubID,
+		divisionID,
+		showCompleted,
 	)
 }
 

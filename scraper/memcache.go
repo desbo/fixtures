@@ -24,12 +24,13 @@ func GetOrUpdateCachedFixtures(ctx context.Context, params fixtures.ListFixtures
 		return json.Unmarshal(s.Value, &fixtures)
 	}
 
-	log.Infof(ctx, "cache MISS for %s", key)
+	log.Infof(ctx, "cache MISS for %s (error: %s)", key, err)
 
 	*fixtures, err = Scrape(ctx, params)
 	b, err := json.Marshal(fixtures)
 
 	if err == nil {
+		log.Infof(ctx, "adding cache entry for %s", key)
 		memcache.Add(ctx, &memcache.Item{
 			Key:        key,
 			Value:      b,
