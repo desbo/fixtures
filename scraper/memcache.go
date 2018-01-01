@@ -8,6 +8,7 @@ import (
 	"github.com/desbo/fixtures/models"
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
 
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/memcache"
 )
 
@@ -19,8 +20,11 @@ func GetOrUpdateCachedFixtures(ctx context.Context, params fixtures.ListFixtures
 	s, err := memcache.Get(ctx, key)
 
 	if err == nil {
+		log.Infof(ctx, "cache HIT for %s", key)
 		return json.Unmarshal(s.Value, &fixtures)
 	}
+
+	log.Infof(ctx, "cache MISS for %s", key)
 
 	*fixtures, err = Scrape(ctx, params)
 	b, err := json.Marshal(fixtures)

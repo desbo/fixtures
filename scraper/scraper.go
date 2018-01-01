@@ -15,6 +15,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/namsral/microdata"
 
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/urlfetch"
 )
 
@@ -214,6 +215,7 @@ func Scrape(ctx context.Context, params fixtures.ListFixturesParams) ([]*models.
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
+	log.Infof(ctx, "fetching %s", u.String())
 	client := urlfetch.Client(ctx)
 	resp, err := client.Get(u.String())
 
