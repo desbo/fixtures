@@ -110,6 +110,7 @@ definitions:
         maximum: 10
       players:
         type: "array"
+        x-omitempty: true
         items:
           $ref: "#/definitions/Player"
     example:
@@ -127,7 +128,8 @@ definitions:
         example: "Timo Boll"
       score:
         type: "integer"
-        example: 4
+        minimum: 0
+        maximum: 3
     example:
       score: 4
       name: "Timo Boll"

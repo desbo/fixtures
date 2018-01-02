@@ -13,6 +13,7 @@ import (
 	"github.com/desbo/fixtures/models"
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/namsral/microdata"
 
 	"google.golang.org/appengine/log"
@@ -158,7 +159,7 @@ func parseTeams(item *microdata.Item, eventName string) (*models.Team, *models.T
 				score, err := strconv.ParseInt(matches[2], 10, 64)
 
 				if err == nil {
-					player.Score = score
+					player.Score = swag.Int64(score)
 				}
 
 				team.Players = append(team.Players, player)
