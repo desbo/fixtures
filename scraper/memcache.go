@@ -3,6 +3,8 @@ package scraper
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/desbo/fixtures/models"
@@ -12,12 +14,18 @@ import (
 	"google.golang.org/appengine/memcache"
 )
 
-const Lifetime = time.Duration(24) * time.Hour
-
 // GetOrUpdateCache gets an item from the cache or calls the get function and stores it
 func GetOrUpdateCachedFixtures(ctx context.Context, params fixtures.ListFixturesParams, fixtures *[]*models.Fixture) error {
 	key := CacheKey(params)
 	s, err := memcache.Get(ctx, key)
+	expiry := int64(24) // default cache expiry (hours)
+
+	if v := os.Getenv("CACHE_TIME"); v != "" {
+		v, err := strconv.ParseInt(v, 10, 0)
+		if err == nil {
+			expiry = v
+		}
+	}
 
 	if err == nil {
 		log.Infof(ctx, "cache HIT for %s", key)
@@ -34,7 +42,7 @@ func GetOrUpdateCachedFixtures(ctx context.Context, params fixtures.ListFixtures
 		memcache.Add(ctx, &memcache.Item{
 			Key:        key,
 			Value:      b,
-			Expiration: Lifetime,
+			Expiration: time.Duration(expiry) * time.Hour,
 		})
 	}
 

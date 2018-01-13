@@ -4,3 +4,7 @@ api_version: go1
 handlers:
 - url: /.*
   script: _go_app
+
+env_variables:
+  # hours
+  CACHE_TIME: 3
