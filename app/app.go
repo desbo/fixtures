@@ -6,6 +6,8 @@ import (
 
 	loads "github.com/go-openapi/loads"
 
+	"github.com/rs/cors"
+
 	"github.com/desbo/fixtures/restapi"
 	"github.com/desbo/fixtures/restapi/operations"
 )
@@ -24,5 +26,5 @@ func init() {
 	defer server.Shutdown()
 
 	server.ConfigureAPI()
-	http.Handle("/", server.GetHandler())
+	http.Handle("/", cors.AllowAll().Handler(server.GetHandler()))
 }
