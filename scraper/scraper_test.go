@@ -1,7 +1,10 @@
 package scraper
 
-import "testing"
-import "github.com/desbo/fixtures/restapi/operations/fixtures"
+import (
+	"testing"
+
+	"github.com/desbo/fixtures/restapi/operations/fixtures"
+)
 
 func TestCreateURL(t *testing.T) {
 	d := int64(5600)
@@ -36,8 +39,8 @@ func TestCreateURL(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if url1.String() != "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?cl=5123&d=5596&hc=False&vm=1" {
-		t.Fatalf("expected https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?cl=5123&d=5596&hc=False&vm=1, got %s", url1)
+	if url1.String() != "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?cl=5123&hc=False&vm=1" {
+		t.Fatalf("expected https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?cl=5123&hc=False&vm=1, got %s", url1)
 	}
 
 	if url2.String() != "https://www.tabletennis365.com/CentralLondon/Fixtures/Winter_2017-18/All_Divisions?d=5600&hc=True&vm=1" {
