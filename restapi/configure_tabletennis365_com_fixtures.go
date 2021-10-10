@@ -19,7 +19,7 @@ import (
 	"github.com/desbo/fixtures/restapi/operations"
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
 
-	"google.golang.org/appengine"
+	appengine "google.golang.org/appengine/v2"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

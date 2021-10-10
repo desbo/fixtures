@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -16,8 +17,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/namsral/microdata"
 
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
+	"log"
 )
 
 const BaseURL = "https://www.tabletennis365.com"
@@ -232,9 +232,8 @@ func Scrape(ctx context.Context, params fixtures.ListFixturesParams) ([]*models.
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
-	log.Infof(ctx, "fetching %s", u.String())
-	client := urlfetch.Client(ctx)
-	resp, err := client.Get(u.String())
+	log.Printf("fetching %s", u.String())
+	resp, err := http.Get(u.String())
 
 	if err != nil {
 		return nil, err

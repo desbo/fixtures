@@ -3,4 +3,5 @@ build:
 	spectacle -t docs swagger.yaml
 
 deploy:
-	gcloud app deploy ./app/app.yaml --project tt365-fixtures
+	gcloud app deploy app.yaml --project planar-berm-308814
+

@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"log"
+
 	"github.com/desbo/fixtures/models"
 	"github.com/desbo/fixtures/restapi/operations/fixtures"
-
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/memcache"
+	"google.golang.org/appengine/v2/memcache"
 )
 
 // GetOrUpdateCache gets an item from the cache or calls the get function and stores it
@@ -28,17 +28,17 @@ func GetOrUpdateCachedFixtures(ctx context.Context, params fixtures.ListFixtures
 	}
 
 	if err == nil {
-		log.Infof(ctx, "cache HIT for %s", key)
+		log.Printf("cache HIT for %s", key)
 		return json.Unmarshal(s.Value, &fixtures)
 	}
 
-	log.Infof(ctx, "cache MISS for %s (error: %s)", key, err)
+	log.Printf("cache MISS for %s (error: %s)", key, err)
 
 	*fixtures, err = Scrape(ctx, params)
 	b, err := json.Marshal(fixtures)
 
 	if err == nil {
-		log.Infof(ctx, "adding cache entry for %s", key)
+		log.Printf("adding cache entry for %s", key)
 		memcache.Add(ctx, &memcache.Item{
 			Key:        key,
 			Value:      b,

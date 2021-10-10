@@ -1,0 +1,7 @@
+runtime: go115
+
+app_engine_apis: true
+
+env_variables:
+  # hours
+  CACHE_TIME: 3

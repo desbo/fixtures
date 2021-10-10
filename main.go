@@ -1,50 +1,44 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/url"
+	"net/http"
 	"os"
 
-	"github.com/desbo/fixtures/scraper"
+	loads "github.com/go-openapi/loads"
 
-	"github.com/namsral/microdata"
+	"github.com/rs/cors"
+
+	"github.com/desbo/fixtures/restapi"
+	"github.com/desbo/fixtures/restapi/operations"
 )
 
-func isSportsEvent(item *microdata.Item) bool {
-	for _, t := range item.Types {
-		if t == "http://schema.org/SportsEvent" {
-			return true
-		}
-	}
-
-	return false
-}
-
 func main() {
-	file, err := os.Open("./example.html")
-
+	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var server *restapi.Server
+
+	api := operations.NewTabletennis365ComFixturesAPI(swaggerSpec)
+	server = restapi.NewServer(api)
+
+	defer server.Shutdown()
+
+	server.ConfigureAPI()
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+
+	http.Handle("/", cors.AllowAll().Handler(server.GetHandler()))
+
+	log.Printf("Listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
 
-	u, err := url.Parse(scraper.BaseURL)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	data, err := microdata.ParseHTML(file, "text/html", u)
-
-	for _, item := range data.Items[:2] {
-		if isSportsEvent(item) {
-			fixture, _ := scraper.NewFixture(item)
-			fmt.Println(fixture)
-			fmt.Println("!!!")
-		}
-	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
 }
