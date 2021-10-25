@@ -174,7 +174,6 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 	fixture := &models.Fixture{
 		Name:   getOrElse(item, "description", "unknown").(string),
 		Status: parseStatus(item),
-		Venue:  getOrElse(item, "location", "unknown").(string),
 	}
 
 	time, err := parseTime(item)
@@ -192,6 +191,9 @@ func NewFixture(item *microdata.Item) (*models.Fixture, error) {
 
 	fixture.Home = home
 	fixture.Away = away
+
+	// hack to extract venue from home team (actual venue not included in item data)
+	fixture.Venue = regexp.MustCompile(`\d`).ReplaceAllString(home.Name, "")
 
 	return fixture, nil
 }
