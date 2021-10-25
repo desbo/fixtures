@@ -143,7 +143,7 @@ func parseTeams(item *microdata.Item, eventName string) (*models.Team, *models.T
 	}
 
 	if perf := item.Properties["performer"]; perf != nil && len(perf) > 0 {
-		playerR := regexp.MustCompile(`([\w\s]+) \((\d+)\)`)
+		playerR := regexp.MustCompile(`(.+) \((\d+)\)`)
 		team := home
 
 		// performer contains team and player names, with the following structure:
